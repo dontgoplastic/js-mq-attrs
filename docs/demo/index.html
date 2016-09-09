@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>js-mq demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <script src="../../node_modules/js-mq/js-mq.js"></script>
+    <script src="../../js-mq-attrs.js"></script>
+    <script>
+        mq.register([
+          {name: 'xs', query: '(max-width: 767px)'},
+          {name: 'sm', query: '(min-width: 768px) and (max-width: 991px)'},
+          {name: 'md', query: '(min-width: 992px) and (max-width: 1199px)'},
+          {name: 'lg', query: '(min-width: 1200px)'}
+        ]);
+    </script>
+</head>
+<body>
+
+
+<div class="js-mq"
+     data-mq-xs--style="color: blue; text-decoration: underline;"
+     data-mq-not-xs--style="color: yellow;">BLUE YELLOW</div>
+
+<div class="breakpoint-vis"></div>
+</body>
+</html>
