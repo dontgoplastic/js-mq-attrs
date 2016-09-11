@@ -1,5 +1,73 @@
-import camelcase from 'camelcase';
-import mq from 'js-mq';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('js-mq')) :
+  typeof define === 'function' && define.amd ? define(['js-mq'], factory) :
+  (global.mq = global.mq || {}, global.mq.attrs = factory(global.mq));
+}(this, (function (mq) { 'use strict';
+
+mq = 'default' in mq ? mq['default'] : mq;
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var index = createCommonjsModule(function (module) {
+'use strict';
+
+function preserveCamelCase(str) {
+	var isLastCharLower = false;
+
+	for (var i = 0; i < str.length; i++) {
+		var c = str.charAt(i);
+
+		if (isLastCharLower && (/[a-zA-Z]/).test(c) && c.toUpperCase() === c) {
+			str = str.substr(0, i) + '-' + str.substr(i);
+			isLastCharLower = false;
+			i++;
+		} else {
+			isLastCharLower = (c.toLowerCase() === c);
+		}
+	}
+
+	return str;
+}
+
+module.exports = function () {
+	var str = [].map.call(arguments, function (str) {
+		return str.trim();
+	}).filter(function (str) {
+		return str.length;
+	}).join('-');
+
+	if (!str.length) {
+		return '';
+	}
+
+	if (str.length === 1) {
+		return str.toLowerCase();
+	}
+
+	if (!(/[_.\- ]+/).test(str)) {
+		if (str === str.toUpperCase()) {
+			return str.toLowerCase();
+		}
+
+		if (str[0] !== str[0].toLowerCase()) {
+			return str[0].toLowerCase() + str.slice(1);
+		}
+
+		return str;
+	}
+
+	str = preserveCamelCase(str);
+
+	return str
+	.replace(/^[_.\- ]+/, '')
+	.toLowerCase()
+	.replace(/[_.\- ]+(\w|$)/g, function (m, p1) {
+		return p1.toUpperCase();
+	});
+};
+});
 
 const config = {
   prefix: 'data-mq-',
@@ -10,7 +78,6 @@ const config = {
 const elMap = new Map();
 const frameUpdatesAdding = new Map();
 const frameUpdatesRemoving = new Map();
-
 
 function collectElements() {
 
@@ -35,9 +102,7 @@ function collectElements() {
       });
     }
   }
-
 }
-
 
 function processUpdates() {
   for (const [el, updates] of frameUpdatesRemoving.entries()) {
@@ -56,7 +121,6 @@ function processUpdates() {
   updating = false;
 }
 
-
 let updating = false;
 function scheduleForUpdate(el, type, rule) {
 
@@ -71,7 +135,6 @@ function scheduleForUpdate(el, type, rule) {
   }
   targetMap.get(el).push(rule);
 }
-
 
 function parseElementRules(el) {
 
@@ -92,7 +155,7 @@ function parseElementRules(el) {
       const property = arr[1];
       const value = attr.value;
 
-      rules.push({el, queryName, property, value});
+      rules.push({ el, queryName, property, value });
     }
   }
 
@@ -101,23 +164,18 @@ function parseElementRules(el) {
 
 document.addEventListener('DOMContentLoaded', collectElements);
 
-
-
-
 function parseStyleString(value) {
-  return (value.indexOf(';') === -1 ? [value] : value.split(';'))
-      .map((s) => {
-        if (s) {
-          const arr = s.split(':');
-          return {
-            property: arr[0],
-            value: arr[1]
-          }
-        } else {
-          return null;
-        }
-      })
-      .filter(o => o !== null);
+  return (value.indexOf(';') === -1 ? [value] : value.split(';')).map(s => {
+    if (s) {
+      const arr = s.split(':');
+      return {
+        property: arr[0],
+        value: arr[1]
+      };
+    } else {
+      return null;
+    }
+  }).filter(o => o !== null);
 }
 
 function clearElementStyles(el, styles) {
@@ -129,12 +187,12 @@ function applyElementStyles(el, styles, remove = false) {
     styles = parseStyleString(styles);
   }
   for (const style of styles) {
-    const propertyCamelCase = camelcase(style.property);
+    const propertyCamelCase = index(style.property);
     el.style[propertyCamelCase] = remove ? '' : style.value;
   }
 }
 
-function removeElementRule({el, queryName, property, value}) {
+function removeElementRule({ el, queryName, property, value }) {
   switch (property) {
     case 'style':
       clearElementStyles(el, value);
@@ -144,7 +202,7 @@ function removeElementRule({el, queryName, property, value}) {
       break;
   }
 }
-function addElementRule({el, queryName, property, value}) {
+function addElementRule({ el, queryName, property, value }) {
   switch (property) {
     case 'style':
       applyElementStyles(el, value);
@@ -155,8 +213,12 @@ function addElementRule({el, queryName, property, value}) {
   }
 }
 
-
-export default {
+var jsMqAttrs = {
   config,
   registerNewEls: collectElements
 };
+
+return jsMqAttrs;
+
+})));
+//# sourceMappingURL=js-mq-attrs.js.map

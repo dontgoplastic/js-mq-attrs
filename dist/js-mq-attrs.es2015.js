@@ -1,10 +1,4 @@
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('js-mq')) :
-  typeof define === 'function' && define.amd ? define(['js-mq'], factory) :
-  (global.mq = global.mq || {}, global.mq.attrs = factory(global.mq));
-}(this, (function (mq) { 'use strict';
-
-mq = 'default' in mq ? mq['default'] : mq;
+import mq from 'js-mq';
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -43,7 +37,7 @@ module.exports = function () {
 	}
 
 	if (str.length === 1) {
-		return str;
+		return str.toLowerCase();
 	}
 
 	if (!(/[_.\- ]+/).test(str)) {
@@ -69,21 +63,19 @@ module.exports = function () {
 };
 });
 
-const prefix = 'data-mq-';
-const selector = '.js-mq';
-const propValDelimiter = '--';
+const config = {
+  prefix: 'data-mq-',
+  identifyingClass: 'js-mq',
+  propValDelimiter: '--'
+};
 
 const elMap = new Map();
 const frameUpdatesAdding = new Map();
 const frameUpdatesRemoving = new Map();
 
-var jsMqAttrs = {
-  registerNewEls: collectElements
-};
-
 function collectElements() {
 
-  const els = Array.from(document.querySelectorAll(selector));
+  const els = Array.from(document.querySelectorAll('.' + config.identifyingClass));
 
   if (els.length === 0) return;
 
@@ -91,11 +83,13 @@ function collectElements() {
     if (elMap.has(el) === false) {
       elMap.set(el, parseElementRules(el));
     }
+    // @TODO allow re-eval of previously added elements
+    el.classList.remove(config.identifyingClass);
   }
 
   for (const [el, rules] of elMap.entries()) {
     for (const rule of rules) {
-      mq.on(rule.mq, () => {
+      mq.on(rule.queryName, () => {
         scheduleForUpdate(el, 'add', rule);
       }, () => {
         scheduleForUpdate(el, 'remove', rule);
@@ -146,16 +140,16 @@ function parseElementRules(el) {
     const attr = attrs[i];
     const attrName = attr.name;
 
-    if (attrName.startsWith(prefix)) {
+    if (attrName.startsWith(config.prefix)) {
 
       // 'data-mq-xs--class' => ['xs', 'class']
-      const arr = attrName.substring(prefix.length).split(propValDelimiter);
+      const arr = attrName.substring(config.prefix.length).split(config.propValDelimiter);
 
-      const mq = arr[0];
+      const queryName = arr[0];
       const property = arr[1];
       const value = attr.value;
 
-      rules.push({ el, mq, property, value });
+      rules.push({ el, queryName, property, value });
     }
   }
 
@@ -192,7 +186,7 @@ function applyElementStyles(el, styles, remove = false) {
   }
 }
 
-function removeElementRule({ el, mq, property, value }) {
+function removeElementRule({ el, queryName, property, value }) {
   switch (property) {
     case 'style':
       clearElementStyles(el, value);
@@ -202,7 +196,7 @@ function removeElementRule({ el, mq, property, value }) {
       break;
   }
 }
-function addElementRule({ el, mq, property, value }) {
+function addElementRule({ el, queryName, property, value }) {
   switch (property) {
     case 'style':
       applyElementStyles(el, value);
@@ -213,7 +207,10 @@ function addElementRule({ el, mq, property, value }) {
   }
 }
 
-return jsMqAttrs;
+var jsMqAttrs = {
+  config,
+  registerNewEls: collectElements
+};
 
-})));
-//# sourceMappingURL=js-mq-attrs.js.map
+export default jsMqAttrs;
+//# sourceMappingURL=js-mq-attrs.es2015.js.map

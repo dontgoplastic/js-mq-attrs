@@ -3,6 +3,7 @@ var rollup = require('rollup');
 var babel = require('rollup-plugin-babel');
 var nodeResolve = require('rollup-plugin-node-resolve');
 var commonjs = require('rollup-plugin-commonjs');
+var path = require('path');
 
 function buildMain() {
 
@@ -10,7 +11,7 @@ function buildMain() {
     entry: './src/js-mq-attrs.js',
     external: ['js-mq'],
     plugins: [
-      nodeResolve(),
+      nodeResolve({ jsnext: true }),
       commonjs(),
       babel({
         exclude: 'node_modules/**'
@@ -18,41 +19,49 @@ function buildMain() {
     ]
   }).then((bundle) => {
 
+    return Promise.all([
+      bundle.write({
+        format: 'es',
+        dest: './dist/js-mq-attrs.es2015.js',
+        sourceMap: true,
+      }),
+      bundle.write({
+        format: 'umd',
+        moduleName: 'mq.attrs',
+        globals: { 'js-mq': 'mq' },
+        dest: './dist/js-mq-attrs.js',
+        sourceMap: true
+      })
+    ]);
+
+  })
+}
+
+function buildDocs() {
+  return rollup.rollup({
+    entry: './docs/demo/demo.js',
+    plugins: [
+      nodeResolve(),
+      commonjs(),
+      babel()
+    ]
+  }).then((bundle) => {
+
     return bundle.write({
-      format: 'umd',
-      moduleName: 'mq.attrs',
-      dest: './js-mq-attrs.js',
-      sourceMap: true,
+      format: 'iife',
+      dest: './docs/demo/demo-es5.js',
+      sourceMap: true
     });
 
   })
-
 }
 
-//function buildDocs() {
-//  return rollup.rollup({
-//    entry: './docs/demo/demo.js',
-//    plugins: [
-//      nodeResolve(),
-//      commonjs(),
-//      babel()
-//    ]
-//  }).then((bundle) => {
-//
-//    return bundle.write({
-//      format: 'iife',
-//      dest: './docs/demo/demo-es5.js',
-//      sourceMap: true
-//    });
-//
-//  })
-//}
-
 gulp.task('main', buildMain);
-//gulp.task('docs', buildDocs);
+gulp.task('docs', buildDocs);
 
-gulp.task('default', ['main']);
+gulp.task('default', ['main', 'docs']);
 
 gulp.task('watch', ['default'], () => {
-  return gulp.watch('./src/*.js', ['main']);
+  gulp.watch('./src/*.js', ['default']);
+  gulp.watch('./docs/demo/*.js', ['docs']);
 });
