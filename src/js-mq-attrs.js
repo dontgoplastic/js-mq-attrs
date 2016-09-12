@@ -1,5 +1,6 @@
 import camelcase from 'camelcase';
 import mq from 'js-mq';
+import domready from 'domready';
 
 const config = {
   prefix: 'data-mq-',
@@ -99,7 +100,7 @@ function parseElementRules(el) {
   return rules;
 }
 
-document.addEventListener('DOMContentLoaded', collectElements);
+domready(collectElements);
 
 
 
