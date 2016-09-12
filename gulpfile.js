@@ -19,20 +19,20 @@ function buildMain() {
     ]
   }).then((bundle) => {
 
-    return Promise.all([
-      bundle.write({
-        format: 'es',
-        dest: './dist/js-mq-attrs.es2015.js',
-        sourceMap: true,
-      }),
-      bundle.write({
+    //return Promise.all([
+      //bundle.write({
+      //  format: 'es',
+      //  dest: './dist/js-mq-attrs.es2015.js',
+      //  sourceMap: true,
+      //}),
+      return bundle.write({
         format: 'umd',
         moduleName: 'mq.attrs',
         globals: { 'js-mq': 'mq' },
         dest: './dist/js-mq-attrs.js',
         sourceMap: true
       })
-    ]);
+    //]);
 
   })
 }
