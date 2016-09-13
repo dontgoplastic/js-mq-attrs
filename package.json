@@ -1,6 +1,6 @@
 {
   "name": "js-mq-attrs",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Update element attribute values for for specified media queries using data attributes",
   "main": "dist/js-mq-attrs.js",
   "jsnext:main": "dist/js-mq-attrs.es2015.js",
